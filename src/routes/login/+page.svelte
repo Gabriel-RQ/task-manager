@@ -1,13 +1,19 @@
-<script>
+<script lang="ts">
+  import { enhance } from "$app/forms";
+  import { fly } from "svelte/transition";
+  import type { PageProps } from "./$types";
+
   let username = $state("");
   let password = $state("");
+
+  let { form }: PageProps = $props();
 </script>
 
 <section>
   <h1>Login</h1>
   <p>Faça login para acessar o sistema.</p>
 
-  <form action="?/login" method="post">
+  <form action="?/login" method="post" use:enhance>
     <label>
       <input
         type="text"
@@ -30,7 +36,7 @@
     <button type="submit">Entrar</button>
   </form>
 
-  <form action="?/register" method="post">
+  <form action="?/register" method="post" use:enhance>
     <input type="text" name="username" class="hidden" bind:value={username} />
     <input
       type="password"
@@ -40,6 +46,18 @@
     />
     <p class="dashed">Não tem uma conta?</p>
     <button type="submit" class="outline">Fazer cadastro</button>
+
+    {#if form}
+      {#if form.success}
+        <span in:fly={{ x: 100, duration: 450 }} class:success={form.success}
+          >{form.message}</span
+        >
+      {:else}
+        <span in:fly={{ x: 100, duration: 450 }} class:error={!form.success}
+          >{form.message}</span
+        >
+      {/if}
+    {/if}
   </form>
 </section>
 
@@ -84,6 +102,23 @@
 
     &::after {
       right: 0;
+    }
+  }
+
+  span {
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.75rem;
+    text-align: center;
+    width: 100%;
+
+    &.success {
+      background-color: #3fac3f;
+    }
+
+    &.error {
+      background-color: #d14c4c;
     }
   }
 </style>
