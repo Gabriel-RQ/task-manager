@@ -5,7 +5,7 @@ const db = new Database(":memory");
 
 db.serialize(() => {
   db.run(
-    "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, password TEXT UNIQUE)"
+    "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT UNIQUE, password TEXT)"
   );
 
   db.run(

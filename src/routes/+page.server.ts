@@ -1,20 +1,40 @@
 import { redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import { getTasks, getUserId, insertTask, updateTask } from "$lib/server/db";
+import {
+  checkUserExists,
+  getTasks,
+  getUserId,
+  insertTask,
+  updateTask,
+} from "$lib/server/db";
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, cookies }) => {
   if (!locals.user || !locals.user.isAuthenticated) {
     redirect(303, "/login");
   }
+
+  if (!checkUserExists(locals.user.username)) {
+    cookies.delete("username", {
+      path: "/",
+      sameSite: "strict",
+      secure: true,
+      httpOnly: true,
+    });
+  }
+
   try {
     const userId = await getUserId(locals.user.username);
     if (!userId) {
       throw new Error("User not found");
     }
     const tasks = await getTasks(userId);
-    return { tasks };
+    return { tasks, user: locals.user.username };
   } catch (error) {
-    return { tasks: [], error: "Failed to load tasks." };
+    return {
+      tasks: [],
+      error: "Failed to load tasks.",
+      user: locals.user.username,
+    };
   }
 };
 

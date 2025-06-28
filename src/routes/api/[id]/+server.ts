@@ -36,8 +36,6 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
   }
 
   try {
-    console.log("aq");
-
     await toggleTaskCompletion(taskId, data.completed);
     return new Response("Tarefa atualizada com sucesso", { status: 200 });
   } catch (error) {

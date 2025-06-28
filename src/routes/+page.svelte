@@ -63,21 +63,28 @@
 
   function formatDate(date: string) {
     const d = new Date(date);
-    return (
-      d.toLocaleDateString("pt-BR") +
-      " às " +
-      d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-    );
+    return d.toLocaleDateString("pt-BR");
   }
 
   let { data, form }: PageProps = $props();
 </script>
 
-<section class="container">
-  <main>
+<section>
+  <header>
     <h1>Minhas Atividades</h1>
     <button class="nova" onclick={() => openModal()}>Nova Atividade</button>
 
+    <span class="user-info">
+      {#if data.user}
+        <p>Bem-vindo, {data.user}!</p>
+        <a href="/logout">Sair</a>
+      {:else}
+        <p>Você não está logado.</p>
+      {/if}
+    </span>
+  </header>
+
+  <div class="container">
     {#if !data.tasks || data.tasks.length === 0}
       <p class="vazio">Nenhuma atividade cadastrada.</p>
     {:else}
@@ -112,7 +119,7 @@
         {/each}
       </ul>
     {/if}
-  </main>
+  </div>
 </section>
 
 {#if showModal}
@@ -122,55 +129,54 @@
     <div class="modal" in:scale={{ duration: 200 }}>
       <h2>{updatingId ? "Editar Atividade" : "Nova Atividade"}</h2>
 
-      <form
-        action="?/new"
-        method="post"
-        id="new-task-form"
-        use:enhance={() =>
-          async ({ update }) => {
-            await update();
-            closeModal();
-          }}
-      >
-        <input
-          bind:value={title}
-          placeholder="Nome da atividade"
-          name="title"
-        />
-        <textarea
-          bind:value={description}
-          placeholder="Descrição"
-          name="description"
-        ></textarea>
-        <input type="date" bind:value={date} name="date" />
-      </form>
-
-      <form
-        action="?/update"
-        method="post"
-        id="update-task-form"
-        use:enhance={() =>
-          async ({ update }) => {
-            await update();
-            closeModal();
-          }}
-        class="hidden"
-      >
-        <input type="hidden" name="id" value={updatingId} />
-        <input
-          bind:value={title}
-          placeholder="Nome da atividade"
-          name="title"
-          class="hidden"
-        />
-        <textarea
-          bind:value={description}
-          placeholder="Descrição"
-          name="description"
-          class="hidden"
-        ></textarea>
-        <input type="date" bind:value={date} name="date" class="hidden" />
-      </form>
+      {#if updatingId}
+        <form
+          action="?/update"
+          method="post"
+          id="update-task-form"
+          use:enhance={() =>
+            async ({ update }) => {
+              await update();
+              closeModal();
+            }}
+        >
+          <input name="id" value={updatingId} type="hidden" />
+          <input
+            bind:value={title}
+            placeholder="Nome da atividade"
+            name="title"
+          />
+          <textarea
+            bind:value={description}
+            placeholder="Descrição"
+            name="description"
+          ></textarea>
+          <input type="date" bind:value={date} name="date" />
+        </form>
+      {:else}
+        <form
+          action="?/new"
+          method="post"
+          id="new-task-form"
+          use:enhance={() =>
+            async ({ update }) => {
+              await update();
+              closeModal();
+            }}
+        >
+          <input
+            bind:value={title}
+            placeholder="Nome da atividade"
+            name="title"
+          />
+          <textarea
+            bind:value={description}
+            placeholder="Descrição"
+            name="description"
+          ></textarea>
+          <input type="date" bind:value={date} name="date" />
+        </form>
+      {/if}
 
       <div class="btns-modal">
         <button class="btn cancell" type="button" onclick={closeModal}
@@ -191,11 +197,29 @@
 {/if}
 
 <style>
-  .container {
+  header {
+    padding: 2rem;
+    position: relative;
+  }
+
+  .user-info {
     display: flex;
-    justify-content: center;
+    gap: 10px;
+    position: absolute;
+    right: 20px;
+    top: 1rem;
+  }
+
+  section {
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+
+  .container {
     align-items: center;
-    min-height: 100vh;
+    display: flex;
+    height: 100%;
+    justify-content: center;
     padding: 20px;
   }
 
@@ -206,11 +230,14 @@
 
   ul {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(350px, 0.5fr));
     gap: 20px;
     list-style: none;
     padding: 0;
     margin-top: 20px;
+    overflow-y: auto;
+    height: 100%;
+    width: 100%;
   }
 
   li {
