@@ -41,7 +41,6 @@ export const actions: Actions = {
       });
     }
 
-    console.log("Login successful, setting cookie.");
     cookies.set("username", (username as string).trim(), {
       path: "/",
       httpOnly: true,
@@ -63,6 +62,13 @@ export const actions: Actions = {
     }
 
     try {
+      if (await checkUserExists((username as string).trim())) {
+        return fail(409, {
+          success: false,
+          message: "Usuário já existe.",
+        });
+      }
+
       await insertUser(
         (username as string).trim(),
         (password as string).trim()
